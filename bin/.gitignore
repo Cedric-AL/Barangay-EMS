@@ -1,0 +1,13 @@
+# Local Supabase credentials
+config/supabase.properties
+
+# Java build output
+out/
+target/
+*.class
+
+# IDE/OS
+.vscode/settings.json
+.idea/
+.DS_Store
+Thumbs.db

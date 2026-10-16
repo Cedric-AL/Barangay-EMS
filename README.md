@@ -1,90 +1,51 @@
-# BARANGAY-EMS
+# Barangay-EMS — Integrated Swing + Supabase Build
 
-Barangay Evacuation Management and Resource Allocation System
+This folder combines the **updated Swing frontend design** with the **Supabase-connected backend** for the Barangay Evacuation Management and Resource Allocation System.
 
-## Project Overview
+## What was combined
 
-BARANGAY-EMS is a Java-based application designed to manage evacuation centers, evacuees, emergency resources, evacuation-center capacity, resource allocation, recommendations, and reports during emergency situations in barangay communities.
+- The newer navy/blue dashboard, sidebar, header, cards, tables, navigation icons, and responsive Swing layout were kept.
+- `DemoStore` was removed from the running application.
+- Login now uses Supabase Auth email/password.
+- Every screen reads a `DataSnapshot` from Supabase.
+- Center, evacuee, resource, transfer, and allocation changes use guarded Supabase RPC functions.
+- Database calls run through `SwingWorker` so the Swing UI does not freeze during network operations.
+- Center Staff can view centers but center CRUD is limited to Barangay Officials in both the UI and database layer.
 
-## Project Structure
+## Project structure
 
-### Directory Layout
-
-```
-BARUNGAY-EMS/
-├── src/
-│   └── barangayems/
-│       ├── Main.java                    (Application entry point)
-│       ├── frontend/                    (GUI/User Interface)
-│       │   ├── Login.java
-│       │   ├── Dashboard.java
-│       │   ├── EvacuationCenters.java
-│       │   ├── Evacuees.java
-│       │   ├── Resources.java
-│       │   ├── Allocation.java
-│       │   └── Reports.java
-│       └── backend/                     (Models & Business Logic)
-│           ├── User.java
-│           ├── BarangayOfficial.java
-│           ├── CenterStaff.java
-│           ├── EvacuationCenter.java
-│           ├── Evacuee.java
-│           ├── Resource.java
-│           └── DataManager.java
-└── README.md
+```text
+src/barangayems/frontend/   Swing UI
+src/barangayems/backend/    Supabase/Auth/data classes
+database/01_schema.sql      Base six-table schema (new DB only)
+database/02_integration.sql Required Auth/RLS/RPC integration
+database/03_link_user.sql.example
+docs/SUPABASE_SETUP.md
+config/supabase.properties.example
+tests/database_checks.sql
 ```
 
-### Package Organization
+## Before running
 
-**barangayems**
-- Main.java: Application entry point and initialization
+Staff can now register from the login screen and wait for official approval. Apply `database/04_staff_registration.sql` once to an already integrated database before using this version. See `docs/STAFF_REGISTRATION.md` for setup and validation.
 
-**barangayems.frontend**
-- Contains all GUI/user interface classes
-- Developed by the Frontend Team
-- Includes screens for Login, Dashboard, Evacuation Centers, Evacuees, Resources, Allocation, and Reports
+The most important missing piece in the files you originally sent was `database/02_integration.sql`. The Java backend calls RPC names such as `ems_snapshot`, `ems_save_center`, `ems_register_evacuee`, and `ems_allocate_resource`; those functions are not present in `01_schema.sql`. This integrated version supplies that migration.
 
-**barangayems.backend**
-- Contains all data models and business logic
-- Developed by the Backend Team
-- Includes entity models (User, BarangayOfficial, CenterStaff, EvacuationCenter, Evacuee, Resource) and DataManager for data operations
+Follow `docs/SUPABASE_SETUP.md` in order.
 
-## Development Environment
+## Run
 
-- **IDE**: Eclipse
-- **Language**: Java
-- **Project Type**: Standard Eclipse Java Project
-- **Source Folder**: src
-- **Base Package**: barangayems
+Requires Java 17+ and Gson 2.10.1. Maven will download Gson automatically when internet access is available:
 
-## Running the Project
+```sh
+mvn compile exec:java
+```
 
-1. Open Eclipse
-2. Import the BARANGAY-EMS project
-3. Right-click on Main.java
-4. Select "Run As" → "Java Application"
-5. Output should display: "BARANGAY-EMS System Started"
+Or use `run.cmd` / `run.sh`. The helper scripts also support a manually supplied `lib/gson.jar`.
 
-## Team Responsibilities
+## Security notes
 
-### Frontend Team
-- Develop GUI screens in the `barangayems.frontend` package
-- Implement user interface components
-- Handle user interactions and screen navigation
-
-### Backend Team
-- Develop data models and business logic in the `barangayems.backend` package
-- Implement entity classes with required attributes and methods
-- Handle data management and system operations
-
-### Project Manager
-- Oversee project structure and integration
-- Coordinate between frontend and backend teams
-- Manage GitHub repository and issue tracking
-
-## Notes
-
-- This is Week 1 of a 3-week development plan
-- Focus is on project setup and system design
-- All team members should ensure their code is properly organized within their respective packages
-- Detailed feature implementation will begin in Week 2
+- Never commit `config/supabase.properties`.
+- Use only the Supabase publishable/anon public key in the desktop client.
+- Never place a service-role/secret key in Java code or local files that will be shared.
+- Password verification remains in Supabase Auth; passwords are not stored in `public.users`.

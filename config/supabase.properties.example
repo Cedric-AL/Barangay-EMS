@@ -1,0 +1,3 @@
+# Copy this file to config/supabase.properties and keep the real file out of Git.
+supabase.url=https://zxqeienskrnthxmcreeo.supabase.co
+supabase.key=PASTE_YOUR_PUBLISHABLE_OR_ANON_KEY_HERE

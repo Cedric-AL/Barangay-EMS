@@ -1,6 +1,14 @@
 package barangayems.backend;
 
+import com.google.gson.annotations.SerializedName;
+
 public class Evacuee {
-    // Evacuee model placeholder
-    // Business logic implementation will be added in Week 2
+    @SerializedName("evacuee_id") public long id;
+    @SerializedName("center_id") public Long centerId;
+    @SerializedName("full_name") public String name;
+    public int age;
+    public String household, contact;
+    @SerializedName("special_needs") public String needs;
+    @SerializedName("vulnerability_category") public String category;
+    public transient String center;
 }

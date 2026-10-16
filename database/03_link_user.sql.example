@@ -1,0 +1,13 @@
+DO $$
+DECLARE v_auth UUID;
+BEGIN
+    SELECT id INTO v_auth FROM auth.users WHERE lower(email)=lower('YOUR_LOGIN_EMAIL');
+    IF v_auth IS NULL THEN RAISE EXCEPTION 'Create the Supabase Auth account with this email first.'; END IF;
+
+    INSERT INTO public.users(username,full_name,role,auth_user_id)
+    VALUES('YOUR_USERNAME','YOUR_FULL_NAME','Barangay Official',v_auth)
+    ON CONFLICT(username) DO UPDATE
+      SET full_name=excluded.full_name, role=excluded.role, auth_user_id=excluded.auth_user_id;
+END $$;
+
+

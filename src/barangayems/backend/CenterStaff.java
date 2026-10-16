@@ -1,6 +1,6 @@
 package barangayems.backend;
 
-public class CenterStaff extends User {
-    // Evacuation Center Staff model placeholder
-    // Business logic implementation will be added in Week 2
+/** Profile returned after Auth and server-owned role verification. */
+public final class CenterStaff extends User {
+    @Override public boolean isOfficial() { return false; }
 }
