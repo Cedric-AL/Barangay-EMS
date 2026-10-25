@@ -71,7 +71,8 @@ public class AppFrame extends JFrame {
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1450, 900);
-        setMinimumSize(new Dimension(1120, 720));
+        setMinimumSize(new Dimension(1000, 680));
+        if (Logo.image() != null) setIconImage(Logo.image());
         setLocationRelativeTo(null);
 
         showLogin();
@@ -155,19 +156,25 @@ public class AppFrame extends JFrame {
         brand.setOpaque(false);
         brand.setBorder(new EmptyBorder(28, 22, 30, 16));
 
-        JPanel emblem = new GradientPanel(
-                new Color(39, 117, 255),
-                new Color(31, 66, 170));
-
-        emblem.setLayout(new GridBagLayout());
-        emblem.setPreferredSize(new Dimension(48, 48));
-        emblem.setBorder(new LineBorder(
-                new Color(105, 177, 255), 1, true));
-
-        JLabel emblemText = new JLabel("B");
-        emblemText.setForeground(Color.WHITE);
-        emblemText.setFont(new Font("SansSerif", Font.BOLD, 28));
-        emblem.add(emblemText);
+        JPanel emblem = new JPanel(new GridBagLayout());
+        emblem.setOpaque(false);
+        emblem.setPreferredSize(new Dimension(52, 52));
+        emblem.setMinimumSize(new Dimension(52, 52));
+        ImageIcon brandIcon = Logo.icon(48);
+        if (brandIcon != null) {
+            JLabel logoLabel = new JLabel(brandIcon);
+            logoLabel.setToolTipText("Official Barangay-EMS logo");
+            emblem.add(logoLabel);
+        } else {
+            // Graceful fallback only if the supplied logo asset is missing.
+            emblem.setOpaque(true);
+            emblem.setBackground(new Color(39, 91, 166));
+            emblem.setBorder(new LineBorder(new Color(105, 177, 255), 1, true));
+            JLabel emblemText = new JLabel("B");
+            emblemText.setForeground(Color.WHITE);
+            emblemText.setFont(new Font("SansSerif", Font.BOLD, 28));
+            emblem.add(emblemText);
+        }
 
         JPanel brandText = new JPanel(new GridLayout(2, 1, 0, 5));
         brandText.setOpaque(false);
@@ -263,9 +270,25 @@ public class AppFrame extends JFrame {
         }
 
         if (isOfficial()) {
-            JButton staff = UI.button("Staff Applications", () -> showPage("Staff Applications"));
+            boolean staffSelected = "Staff Applications".equals(name);
+            JButton staff = new JButton("Staff Applications");
             staff.setMaximumSize(new Dimension(Integer.MAX_VALUE, 49));
+            staff.setPreferredSize(new Dimension(225, 49));
+            staff.setHorizontalAlignment(SwingConstants.LEFT);
+            staff.setIcon(new NavIcon("Staff Applications", staffSelected));
+            staff.setIconTextGap(15);
+            staff.setFont(new Font("SansSerif", staffSelected ? Font.BOLD : Font.PLAIN, 13));
+            staff.setForeground(staffSelected ? Color.WHITE : new Color(184, 202, 226));
+            staff.setBackground(staffSelected ? new Color(39, 91, 166) : new Color(12, 27, 49));
+            staff.setOpaque(true);
+            staff.setBorder(staffSelected
+                    ? new CompoundBorder(new MatteBorder(0, 3, 0, 0, new Color(76, 177, 255)), new EmptyBorder(0, 13, 0, 10))
+                    : new EmptyBorder(0, 16, 0, 10));
+            staff.setFocusPainted(false);
+            staff.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            staff.addActionListener(e -> showPage("Staff Applications"));
             menu.add(staff);
+            menu.add(Box.createVerticalStrut(7));
         }
 
         navWrap.add(menu, BorderLayout.CENTER);
@@ -600,6 +623,13 @@ public class AppFrame extends JFrame {
                     g.drawRect(2, 6, 16, 13);
                     g.drawLine(2, 11, 18, 11);
                     g.drawRect(7, 2, 6, 4);
+                    break;
+
+                case "Staff Applications":
+                    g.drawOval(5, 2, 10, 10);
+                    g.drawArc(2, 10, 16, 12, 0, 180);
+                    g.drawLine(15, 5, 19, 5);
+                    g.drawLine(17, 3, 17, 7);
                     break;
 
                 case "Reports":

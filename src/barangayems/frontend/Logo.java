@@ -15,11 +15,13 @@ final class Logo {
 
     private static BufferedImage load() {
         try {
-            File file = new File("assets/logo.png");
-            if (file.exists()) return ImageIO.read(file);
+            // Prefer the bundled classpath resource so the logo also works from a packaged JAR.
             try (InputStream in = Logo.class.getResourceAsStream("/assets/logo.png")) {
                 if (in != null) return ImageIO.read(in);
             }
+            // Keep compatibility with running directly from the project folder.
+            File file = new File("assets/logo.png");
+            if (file.exists()) return ImageIO.read(file);
         } catch (Exception ignored) {
             // The app still works without the logo.
         }
