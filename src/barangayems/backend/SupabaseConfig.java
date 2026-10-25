@@ -4,9 +4,12 @@ import java.io.IOException;
 import java.io.Reader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.Properties;
+
 import com.google.gson.JsonParser;
 
 public record SupabaseConfig(String url, String key) {
