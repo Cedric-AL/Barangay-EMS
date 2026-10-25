@@ -1,9 +1,20 @@
 package barangayems.frontend;
 
-import barangayems.backend.*;
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.GridBagLayout;
+import java.awt.GridLayout;
 import java.util.Arrays;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JSeparator;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 
 public class Login extends JPanel {
     public Login(AppFrame app){
@@ -12,7 +23,10 @@ public class Login extends JPanel {
         body.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(UI.LINE),BorderFactory.createEmptyBorder(36,40,30,40)));
         JPanel headings=UI.panel(new GridLayout(3,1,0,10));
         JLabel brand=UI.label("BARANGAY-EMS",36,true);brand.setHorizontalAlignment(SwingConstants.CENTER);headings.add(brand);
-        JLabel subtitle=UI.label("Barangay Evacuation Management System",16,true);subtitle.setHorizontalAlignment(SwingConstants.CENTER);headings.add(subtitle);headings.add(new JSeparator());body.add(headings,BorderLayout.NORTH);
+        JLabel subtitle=UI.label("Barangay Evacuation Management System",16,true);subtitle.setHorizontalAlignment(SwingConstants.CENTER);headings.add(subtitle);headings.add(new JSeparator());
+JPanel top=UI.panel(new BorderLayout(0,12));
+if(Logo.icon(120)!=null){JLabel logo=new JLabel(Logo.icon(120));logo.setHorizontalAlignment(SwingConstants.CENTER);top.add(logo,BorderLayout.NORTH);}
+top.add(headings,BorderLayout.CENTER);body.add(top,BorderLayout.NORTH);
         JPanel fields=UI.form();JTextField user=new JTextField();JPasswordField password=new JPasswordField();
         JComboBox<String> role=new JComboBox<>(new String[]{"Barangay Official","Center Staff"});
         UI.field(fields,0,"Email:",user);UI.field(fields,1,"Password:",password);UI.field(fields,2,"Role:",role);body.add(fields);
