@@ -15,7 +15,7 @@ public class Allocation extends JPanel {
         JPanel tables = UI.panel(new GridLayout(2,1,0,16));
         tables.add(UI.card("Resource Inventory", UI.scroll(UI.table(Resources.inventory(app.store)))));
 
-        DefaultTableModel history = UI.model("Destination Center","Resource","Quantity","Unit","Date");
+        DefaultTableModel history = UI.model(   "Destination Center","Resource","Quantity","Unit","Date");
         for (DataSnapshot.AllocationRecord row : app.store.allocations) {
             Resource item = app.store.resource(row.resourceId);
             history.addRow(new Object[]{
