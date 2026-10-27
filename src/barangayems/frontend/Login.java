@@ -132,7 +132,17 @@ public class Login extends JPanel {
         styleComboBox(roleCombo);
 
         addLoginField(fields, 0, "Email Address", emailField);
-        addLoginField(fields, 1, "Password", passwordField);
+        JPanel passwordRow = new JPanel(new BorderLayout(8, 0));
+        passwordRow.setBackground(WHITE);
+        passwordRow.add(passwordField, BorderLayout.CENTER);
+        javax.swing.JToggleButton showPassword = new javax.swing.JToggleButton("Show password");
+        char passwordMask = passwordField.getEchoChar();
+        showPassword.addActionListener(e -> {
+            passwordField.setEchoChar(showPassword.isSelected() ? (char)0 : passwordMask);
+            showPassword.setText(showPassword.isSelected() ? "Hide password" : "Show password");
+        });
+        passwordRow.add(showPassword, BorderLayout.EAST);
+        addLoginField(fields, 1, "Password", passwordRow);
         addLoginField(fields, 2, "Sign in as", roleCombo);
 
         fields.setBorder(new EmptyBorder(10, 0, 10, 0));

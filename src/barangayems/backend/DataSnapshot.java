@@ -6,6 +6,7 @@ import java.util.List;
 
 /** Consistent operational snapshot returned by the ems_snapshot RPC. */
 public class DataSnapshot {
+    public List<SupplyRule> supplyRules = new ArrayList<>();
     public List<EvacuationCenter> centers = new ArrayList<>();
     public List<Evacuee> people = new ArrayList<>();
     public List<Resource> supplies = new ArrayList<>();
@@ -34,12 +35,16 @@ public class DataSnapshot {
         }
     }
 
+    public java.util.List<EvacuationCenter> activeCenters() {
+        return centers.stream().filter(c -> !c.archived).toList();
+    }
+
     public int occupants() {
         return centers.stream().mapToInt(center -> center.occupants).sum();
     }
 
     public int capacity() {
-        return centers.stream().mapToInt(center -> center.capacity).sum();
+        return activeCenters().stream().mapToInt(center -> center.capacity).sum();
     }
 
     public static class AllocationRecord {

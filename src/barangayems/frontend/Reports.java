@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.io.IOException;
 public class Reports extends JPanel {
     final AppFrame app;final JTextArea preview=new JTextArea();
-    final JComboBox<String> type=new JComboBox<>(new String[]{"Occupancy","Evacuee Records","Resource Inventory","Resource Shortages","Allocation History","Transfer History"});
+    final JComboBox<String> type=new JComboBox<>(new String[]{"Occupancy","Evacuee Records","Resource Inventory","Low Stock","Demand Shortages","Allocation History","Transfer History"});
     public Reports(AppFrame app){
         super(new BorderLayout());this.app=app;JPanel page=UI.page("6 — REPORTS");add(page);
         JPanel body=UI.panel(new BorderLayout(0,20));JPanel controls=UI.panel(new FlowLayout(FlowLayout.LEFT,16,0));controls.add(UI.label("Report Type:",14,true));type.setPreferredSize(new Dimension(270,35));controls.add(type);controls.add(UI.button("Generate",()->generate()));body.add(UI.card(null,controls),BorderLayout.NORTH);
@@ -23,10 +23,11 @@ public class Reports extends JPanel {
             case "Occupancy":
                 text.append("Total Capacity   : ").append(app.store.capacity()).append("\nCurrent Occupants: ").append(app.store.occupants()).append("\nAvailable Spaces : ").append(app.store.capacity()-app.store.occupants()).append("\n\n");
                 for(EvacuationCenter c:app.store.centers)text.append(c.name).append("\n  Capacity: ").append(c.capacity).append(" | Occupants: ").append(c.occupants).append(" | Available: ").append(c.available()).append(" | ").append(c.status()).append("\n\n");break;
-            case "Evacuee Records":for(Evacuee p:app.store.people)text.append(p.name).append(" | Age: ").append(p.age).append("\n  Household: ").append(p.household).append(" | Center: ").append(p.center).append("\n  Needs: ").append(p.needs).append(" | Category: ").append(p.category).append("\n\n");break;
+            case "Evacuee Records":for(Evacuee p:app.store.people)text.append(p.name).append(" | Age: ").append(p.age).append("\n  Household: ").append(p.household).append(" | Center: ").append(p.center).append("\n  Needs: ").append(p.needs).append(" | Category: ").append(p.category).append(" | Required facilities: ").append(java.util.Arrays.toString(p.requirements)).append("\n\n");break;
+            case "Demand Shortages": text.append(SupplyDemand.report(app.store)); break;
             case "Allocation History":for(DataSnapshot.AllocationRecord row:app.store.allocations){Resource item=app.store.resource(row.resourceId);text.append(row.date).append(" | ").append(app.store.centerName(row.centerId)).append("\n  ").append(item==null?"Unavailable":item.name).append(": ").append(row.quantity).append(' ').append(item==null?"":item.unit).append("\n\n");}if(app.store.allocations.isEmpty())text.append("No distributions recorded.\n");break;
             case "Transfer History":for(DataSnapshot.TransferRecord row:app.store.transfers)text.append(row.date).append(" | Resident #").append(row.personId).append("\n  ").append(app.store.centerName(row.fromId)).append(" -> ").append(app.store.centerName(row.toId)).append("\n  ").append(row.reason).append("\n\n");if(app.store.transfers.isEmpty())text.append("No transfers recorded.\n");break;
-            default:for(Resource r:app.store.supplies)if(!selected.equals("Resource Shortages")||r.shortage()>0)text.append(r.center).append(" / ").append(r.name).append("\n  Remaining: ").append(r.remaining()).append(' ').append(r.unit).append(" | Minimum stock: ").append(r.required).append(" | Shortage: ").append(r.shortage()).append("\n\n");
+            default:for(Resource r:app.store.supplies)if(!selected.equals("Low Stock")||r.shortage()>0)text.append(r.center).append(" / ").append(r.name).append("\n  Remaining: ").append(r.remaining()).append(' ').append(r.unit).append(" | Minimum stock: ").append(r.required).append(" | Low stock deficit: ").append(r.shortage()).append("\n\n");
         }
         preview.setText(text.toString());preview.setCaretPosition(0);
     }

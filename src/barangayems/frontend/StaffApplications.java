@@ -15,7 +15,7 @@ final class StaffApplications extends JPanel {
         DefaultTableModel model = UI.model("Name", "Username", "Email", "Status", "Assigned Center", "Review note");
         JTable table = UI.table(model);
         add(UI.scroll(table), BorderLayout.CENTER);
-        JComboBox<EvacuationCenter> centers = new JComboBox<>(app.store.centers.toArray(new EvacuationCenter[0]));
+        JComboBox<EvacuationCenter> centers = new JComboBox<>(app.store.activeCenters().toArray(new EvacuationCenter[0]));
         centers.setSelectedIndex(-1);
         JTextField note = new JTextField(20);
         JPanel controls = UI.panel(new GridLayout(0, 1, 0, 10));

@@ -48,9 +48,13 @@ public final class DataManager {
         client.rpc("ems_review_staff", object("p_auth_id", authId, "p_action", action, "p_center_id", centerId, "p_note", note));
     }
     public DataSnapshot load() throws Exception {
-        DataSnapshot s = json.fromJson(client.rpc("ems_snapshot", new JsonObject()), DataSnapshot.class);
+        JsonElement payload = client.rpc("ems_snapshot", new JsonObject());
+        if (!payload.isJsonObject() || !payload.getAsJsonObject().has("supplyRules"))
+            throw new IllegalStateException("Apply database/09_archive_centers.sql and database/10_requirements_planning.sql before using this version.");
+        DataSnapshot s = json.fromJson(payload, DataSnapshot.class);
         if (s == null || s.centers == null || s.people == null || s.supplies == null || s.allocations == null || s.transfers == null)
             throw new IllegalStateException("Incomplete database snapshot. Apply database/02_integration.sql first.");
+        if (s.supplyRules == null) throw new IllegalStateException("Apply database/10_requirements_planning.sql before using this version.");
         s.resolveLabels(); return s;
     }
     private JsonObject object(Object... fields) {
@@ -58,20 +62,21 @@ public final class DataManager {
         for (int i = 0; i < fields.length; i += 2) result.add((String) fields[i], json.toJsonTree(fields[i+1]));
         return result;
     }
-    public void saveCenter(Long id, String name, String location, int capacity, String facilities) throws Exception {
-        client.rpc("ems_save_center", object("p_id", id, "p_name", name, "p_location", location, "p_capacity", capacity, "p_facilities", facilities));
+    public void saveCenter(Long id, String name, String location, int capacity, String facilities, String[] features, boolean complete) throws Exception {
+        client.rpc("ems_save_center_profile", object("p_id", id, "p_name", name, "p_location", location, "p_capacity", capacity, "p_facilities", facilities, "p_features", features, "p_complete", complete));
     }
+    public void archiveCenter(long id) throws Exception { client.rpc("ems_archive_center", object("p_id", id)); }
     public void deleteCenter(long id) throws Exception { client.rpc("ems_delete_center", object("p_id", id)); }
-    public void register(String name, int age, String household, String contact, long centerId, String needs, String category, boolean distinct) throws Exception {
-        client.rpc("ems_register_evacuee", object("p_name", name, "p_age", age, "p_household", household, "p_contact", contact,
-                "p_center_id", centerId, "p_needs", needs, "p_category", category, "p_allow_duplicate", distinct));
+    public void register(String name, int age, String household, String contact, long centerId, String needs, String category, boolean distinct, String[] requirements) throws Exception {
+        client.rpc("ems_register_evacuee_planned", object("p_name", name, "p_age", age, "p_household", household, "p_contact", contact,
+                "p_center_id", centerId, "p_needs", needs, "p_category", category, "p_allow_duplicate", distinct, "p_requirements", requirements));
     }
     public void transfer(long id, long toId, String reason) throws Exception {
         client.rpc("ems_transfer_evacuee", object("p_id", id, "p_to_center_id", toId, "p_reason", reason));
     }
-    public void updateEvacuee(long id, String name, int age, String household, String contact, String needs, String category) throws Exception {
-        client.rpc("ems_update_evacuee", object("p_id", id, "p_name", name, "p_age", age, "p_household", household,
-                "p_contact", contact, "p_needs", needs, "p_category", category));
+    public void updateEvacuee(long id, String name, int age, String household, String contact, String needs, String category, String[] requirements) throws Exception {
+        client.rpc("ems_update_evacuee_planned", object("p_id", id, "p_name", name, "p_age", age, "p_household", household,
+                "p_contact", contact, "p_needs", needs, "p_category", category, "p_requirements", requirements));
     }
     public void deleteEvacuee(long id) throws Exception {
         client.rpc("ems_delete_evacuee", object("p_id", id));
@@ -82,6 +87,9 @@ public final class DataManager {
     public void saveResource(Long id, long centerId, String name, String unit, int quantity, int used, int minimum) throws Exception {
         client.rpc("ems_save_resource", object("p_id", id, "p_center_id", centerId, "p_name", name, "p_unit", unit,
                 "p_quantity", quantity, "p_used", used, "p_minimum", minimum));
+    }
+    public void saveSupplyRule(String name, String unit, String group, java.math.BigDecimal rate, int days, boolean enabled) throws Exception {
+        client.rpc("ems_save_supply_rule", object("p_name", name, "p_unit", unit, "p_group", group, "p_rate", rate, "p_days", days, "p_enabled", enabled));
     }
     public void allocate(long resourceId, long centerId, int quantity) throws Exception {
         client.rpc("ems_allocate_resource", object("p_resource_id", resourceId, "p_to_center_id", centerId, "p_quantity", quantity));

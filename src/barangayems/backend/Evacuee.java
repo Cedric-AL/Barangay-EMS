@@ -10,5 +10,6 @@ public class Evacuee {
     public String household, contact;
     @SerializedName("special_needs") public String needs;
     @SerializedName("vulnerability_category") public String category;
+    public String[] requirements = new String[0];
     public transient String center;
 }

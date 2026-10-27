@@ -19,8 +19,8 @@ final class StaffRegistration extends JPanel {
         UI.field(fields, 0, "Full name:", name);
         UI.field(fields, 1, "Username:", username);
         UI.field(fields, 2, "Email:", email);
-        UI.field(fields, 3, "Password:", password);
-        UI.field(fields, 4, "Confirm password:", confirm);
+        UI.field(fields, 3, "Password:", passwordWithToggle(password));
+        UI.field(fields, 4, "Confirm password:", passwordWithToggle(confirm));
         body.add(fields, BorderLayout.CENTER);
         JPanel footer = UI.panel(new GridLayout(0, 1, 0, 12));
         footer.add(UI.label("A Barangay Official must approve your application before you can use the system.", 12, false));
@@ -49,5 +49,18 @@ final class StaffRegistration extends JPanel {
         footer.add(UI.button("Back to Login", app::showLogin));
         body.add(footer, BorderLayout.SOUTH);
         add(body);
+    }
+
+    private static JPanel passwordWithToggle(JPasswordField field) {
+        JPanel row = UI.panel(new BorderLayout(8, 0));
+        row.add(field, BorderLayout.CENTER);
+        JToggleButton toggle = new JToggleButton("Show password");
+        char mask = field.getEchoChar();
+        toggle.addActionListener(e -> {
+            field.setEchoChar(toggle.isSelected() ? (char)0 : mask);
+            toggle.setText(toggle.isSelected() ? "Hide password" : "Show password");
+        });
+        row.add(toggle, BorderLayout.EAST);
+        return row;
     }
 }

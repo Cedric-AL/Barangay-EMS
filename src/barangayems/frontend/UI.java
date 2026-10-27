@@ -478,7 +478,7 @@ final class UI {
         constraints.anchor = GridBagConstraints.WEST;
         constraints.insets = new Insets(0, 0, 14, 0);
 
-        int height = input instanceof JScrollPane ? 70 : 40;
+        int height = input instanceof FacilityChecklist ? 140 : input instanceof JScrollPane ? 70 : 40;
 
         input.setPreferredSize(new Dimension(180, height));
         input.setMinimumSize(new Dimension(100, height));

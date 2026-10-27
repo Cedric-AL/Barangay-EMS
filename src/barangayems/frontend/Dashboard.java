@@ -28,7 +28,11 @@ public class Dashboard extends JPanel {
     public Dashboard(AppFrame app) {
         super(new BorderLayout());
 
-        DataSnapshot s = app.store;
+        DataSnapshot s = new DataSnapshot();
+        s.centers = app.store.activeCenters();
+        s.people = app.store.people;
+        s.supplyRules = app.store.supplyRules;
+        s.supplies = app.store.supplies.stream().filter(r -> s.centers.stream().anyMatch(c -> c.id == r.centerId)).toList();
 
         JPanel page = UI.page("2 — DASHBOARD");
         page.setLayout(new BorderLayout());
@@ -70,8 +74,8 @@ public class Dashboard extends JPanel {
                 "No remaining capacity", "#F56B79"},
             {"LOW RESOURCES", "" + low, "▤",
                 "Items needing attention", "#F5A742"},
-            {"NEEDS RESUPPLY", "" + low, "↻",
-                "Resource categories flagged", "#9775FA"}
+            {"DEMAND SHORTAGES", "" + SupplyDemand.rows(s).stream().filter(r -> r.plan().deficit()>0).count(), "↻",
+                "Center/item requirements unmet", "#9775FA"}
         };
 
         JPanel stats = new JPanel(new GridLayout(2, 3, 14, 14));
@@ -443,9 +447,10 @@ public class Dashboard extends JPanel {
                 .filter(r -> r.shortage() > 0)
                 .count();
 
-        JLabel count = new JLabel(low + " ALERTS");
+        long demandAlerts=SupplyDemand.rows(s).stream().filter(r->r.plan().deficit()>0).count();
+        JLabel count = new JLabel((low+demandAlerts) + " ALERTS");
         count.setFont(new Font("SansSerif", Font.BOLD, 10));
-        count.setForeground(low > 0 ? RED : GREEN);
+        count.setForeground(low + demandAlerts > 0 ? RED : GREEN);
 
         heading.add(headingText, BorderLayout.CENTER);
         heading.add(count, BorderLayout.EAST);
@@ -455,6 +460,11 @@ public class Dashboard extends JPanel {
         list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
 
         int shown = 0;
+        if(s.supplyRules.stream().noneMatch(r->r.enabled))list.add(new JLabel("Demand not assessed: configure Supply Rules."));
+        for(SupplyDemand.Row row:SupplyDemand.rows(s))if(row.plan().deficit()>0){
+            JTextArea demand=new JTextArea(row.center().name+" / "+row.rule().name+"\nDemand shortage: "+row.plan().deficit()+" "+row.rule().unit+" ("+row.rule().days+" days)");
+            demand.setEditable(false);demand.setLineWrap(true);demand.setWrapStyleWord(true);list.add(demand);list.add(Box.createVerticalStrut(8));shown++;
+        }
 
         for (Resource r : s.supplies) {
             if (r.shortage() <= 0) {
@@ -489,7 +499,7 @@ public class Dashboard extends JPanel {
             name.setForeground(TEXT);
 
             JLabel shortage = new JLabel(
-                    "Shortage: " + r.shortage() + " " + r.unit
+                    "Low stock deficit: " + r.shortage() + " " + r.unit
             );
             shortage.setFont(new Font("SansSerif", Font.PLAIN, 10));
             shortage.setForeground(new Color(197, 73, 85));
@@ -511,11 +521,11 @@ public class Dashboard extends JPanel {
             shown++;
         }
 
-        if (shown == 0) {
+        if (shown == 0 && s.supplyRules.stream().anyMatch(r -> r.enabled)) {
             JLabel clear = new JLabel(
                     "<html><div style='text-align:center;'>"
                     + "<br><b>All clear</b><br>"
-                    + "No resource shortages reported."
+                    + "No shortages under configured rules. Review rule coverage."
                     + "</div></html>",
                     SwingConstants.CENTER
             );
