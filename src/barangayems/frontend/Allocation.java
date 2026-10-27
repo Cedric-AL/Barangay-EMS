@@ -62,7 +62,7 @@ public class Allocation extends JPanel {
             if(item==null){UI.error(this,"Select a source resource.");return;}
             SupplyRule saved=app.store.supplyRules.stream().filter(r->r.enabled&&r.matches(item.name,item.unit)).findFirst().orElse(null);
             if(saved==null){UI.error(this,"No enabled rule for this item and unit. Officials can configure Supply Rules in Resources.");return;}
-            group.setSelectedItem(saved.group);rate.setText(saved.dailyRate.toPlainString());days.setValue(saved.days);
+            group.setSelectedItem(saved.group);rate.setText(saved.rateText());days.setValue(saved.days);
             estimate.setText("Saved rule loaded. Calculate to review the suggested quantity.");
         }));
         plannerTop.add(plannerButtons,BorderLayout.SOUTH);

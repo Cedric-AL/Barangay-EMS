@@ -37,11 +37,11 @@ public class Resources extends JPanel {
         JTextField name=new JTextField(r==null?"":r.name),unit=new JTextField(r==null?"":r.unit),available=new JTextField(r==null?"0":""+r.available),used=new JTextField(r==null?"0":""+r.used),required=new JTextField(r==null?"0":""+r.required);
         JComboBox<EvacuationCenter> center=new JComboBox<>();for(EvacuationCenter c:app.store.activeCenters()){center.addItem(c);if(r!=null&&c.id==r.centerId)center.setSelectedItem(c);}
         center.setEnabled(r==null);
-        JPanel form=UI.form();UI.field(form,0,"Center",center);UI.field(form,1,"Item",name);UI.field(form,2,"Unit",unit);UI.field(form,3,"Quantity total",available);UI.field(form,4,"Used / allocated",used);UI.field(form,5,"Minimum stock",required);
+        JPanel form=UI.form();UI.field(form,0,"Center",center);UI.field(form,1,"Item",name);UI.field(form,2,"Unit",unit);UI.field(form,3,"Quantity total",available);if(r!=null)UI.field(form,4,"Used / allocated",used);UI.field(form,r==null?4:5,"Minimum stock",required);
         form.setPreferredSize(new Dimension(380,form.getPreferredSize().height));
         while(JOptionPane.showConfirmDialog(this,form,r==null?"Add resource":"Update resource",JOptionPane.OK_CANCEL_OPTION,JOptionPane.PLAIN_MESSAGE)==JOptionPane.OK_OPTION){
             try{
-                String n=UI.required(name.getText(),"Item"),u=UI.required(unit.getText(),"Unit");int a=UI.number(available.getText(),"Available",0),v=UI.number(used.getText(),"Used",0),q=UI.number(required.getText(),"Required",0);
+                String n=UI.required(name.getText(),"Item"),u=UI.required(unit.getText(),"Unit");int a=UI.number(available.getText(),"Available",0),v=r==null?0:UI.number(used.getText(),"Used",0),q=UI.number(required.getText(),"Required",0);
                 if(v>a)throw new IllegalArgumentException("Used quantity cannot exceed available stock.");
                 if(center.getSelectedItem()==null)throw new IllegalArgumentException("Add a center first.");
                 long centerId=((EvacuationCenter)center.getSelectedItem()).id;Long id=r==null?null:r.id;

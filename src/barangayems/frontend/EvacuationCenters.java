@@ -50,19 +50,18 @@ public class EvacuationCenters extends JPanel {
         form.add(UI.scroll(fields),BorderLayout.CENTER);
         JButton save = UI.button("Save as New",()->save(false));
         JButton update = UI.secondary("Update",()->save(true));
-        JButton delete = UI.danger("Delete",this::delete);
-        save.setEnabled(canManage); update.setEnabled(canManage); delete.setEnabled(canManage);
+        save.setEnabled(canManage); update.setEnabled(canManage);
         JButton archive = UI.secondary("Archive", this::archive);
         archive.setEnabled(canManage);
         JPanel buttons = UI.panel(new BorderLayout(0,8));
         JPanel mainButtons = UI.panel(new GridLayout(1,2,8,0));
         mainButtons.add(update); mainButtons.add(save);
-        JPanel otherButtons = UI.panel(new GridLayout(1,2,8,0));
-        otherButtons.add(archive); otherButtons.add(delete);
+        JPanel otherButtons = UI.panel(new GridLayout(1,1,8,0));
+        otherButtons.add(archive);
         buttons.add(mainButtons, BorderLayout.CENTER);
         buttons.add(otherButtons, BorderLayout.SOUTH);
         if (!canManage) {
-            JLabel note = UI.hint("<html>Center Staff accounts can view centers. Only Barangay Officials can add, update or delete them.</html>");
+            JLabel note = UI.hint("<html>Center Staff accounts can view centers. Only Barangay Officials can add, update or archive them.</html>");
             buttons.add(note, BorderLayout.NORTH);
         }
         form.add(buttons,BorderLayout.SOUTH);
@@ -134,17 +133,4 @@ public class EvacuationCenters extends JPanel {
         } catch (IllegalArgumentException e) { UI.error(this,e.getMessage()); }
     }
 
-    private void delete() {
-        try {
-            if (!app.isOfficial()) throw new IllegalArgumentException("Only Barangay Officials can delete evacuation centers.");
-            if (selected == null) throw new IllegalArgumentException("Select a center first.");
-            if (selected.occupants > 0) throw new IllegalArgumentException("Transfer all occupants before deleting this center.");
-            long id = selected.id;
-            if (JOptionPane.showConfirmDialog(this,"Permanently delete " + selected.name + "?\nIf linked records prevent deletion, use Archive to preserve history.","Delete center",JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
-                app.mutate(() -> app.data.deleteCenter(id), "Evacuation Centers");
-            }
-        } catch (IllegalArgumentException e) {
-            UI.error(this,e.getMessage());
-        }
-    }
 }

@@ -22,7 +22,7 @@ public final class SupplyDemand {
             return result.append("No enabled rules. Officials can configure Supply Rules in Resources.\n").toString();
         for (Row row : rows(snapshot)) result.append(row.center.name).append(" / ").append(row.rule.name)
                 .append(" | Group: ").append(row.rule.group).append(" | People: ").append(row.plan.people())
-                .append("\n  Rate: ").append(row.rule.dailyRate).append(" ").append(row.rule.unit)
+                .append("\n  Rate: ").append(row.rule.rateText()).append(" ").append(row.rule.unit)
                 .append(" per person/day | Days: ").append(row.rule.days)
                 .append("\n  Required: ").append(row.plan.required()).append(" | Remaining: ").append(row.plan.onHand())
                 .append(" | Demand shortage: ").append(row.plan.deficit()).append("\n\n");

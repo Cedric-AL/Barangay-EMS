@@ -10,6 +10,7 @@ public final class SupplyRule {
     @SerializedName("daily_rate") public BigDecimal dailyRate;
     @SerializedName("coverage_days") public int days;
     public boolean enabled;
+    public String rateText() { return dailyRate == null ? "" : dailyRate.stripTrailingZeros().toPlainString(); }
     public boolean matches(String item, String units) {
         return name != null && unit != null && item != null && units != null
                 && name.trim().equalsIgnoreCase(item.trim()) && unit.trim().equalsIgnoreCase(units.trim());

@@ -61,3 +61,6 @@ Use tests/requirements_planning_checks.sql only on a disposable database after a
 required migrations. Test fixtures roll back. See LIVE_WORKFLOW_CHECKLIST.md for
 manual workflows and concurrent allocation checks. Local checks do not establish
 that migrations have been applied or that live Supabase workflows passed.
+
+## Existing inventory choices (migration 11)
+Supply Rules now selects an existing inventory item/unit pair and fills the unit automatically. Apply database/11_existing_resource_rules.sql after migration 10 to enforce this on the database too. Rules still assess all active centers, including centers with no stock of that item. Existing rules are preserved. Daily rates display without trailing zeros; calculation precision is unchanged.
