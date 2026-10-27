@@ -23,15 +23,36 @@ public class AppFrame extends JFrame {
         if (busy) return;
         busy = true;
 
-        JPanel overlay = new JPanel(new GridBagLayout());
+        JPanel overlay = new JPanel(new GridBagLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                g.setColor(new Color(13, 27, 46, 70));
+                g.fillRect(0, 0, getWidth(), getHeight());
+                super.paintComponent(g);
+            }
+        };
         overlay.setOpaque(false);
-        JLabel waiting = UI.label("Connecting to Supabase…", 16, true);
-        waiting.setOpaque(true);
-        waiting.setBackground(UI.BG);
-        waiting.setBorder(new CompoundBorder(
-                new LineBorder(UI.LINE, 1, true),
-                new EmptyBorder(20, 30, 20, 30)));
-        overlay.add(waiting);
+        UI.RoundedPanel box = new UI.RoundedPanel(16, Color.WHITE);
+        box.setLayout(new BorderLayout(12, 0));
+        box.setBorder(new EmptyBorder(18, 22, 18, 26));
+        JProgressBar spinner = new JProgressBar();
+        spinner.setIndeterminate(true);
+        spinner.setPreferredSize(new Dimension(54, 6));
+        spinner.setBorderPainted(false);
+        spinner.setForeground(UI.BLUE);
+        spinner.setBackground(UI.BLUE_PALE);
+        JPanel spinWrap = new JPanel(new GridBagLayout());
+        spinWrap.setOpaque(false);
+        spinWrap.add(spinner);
+        JLabel waiting = UI.label("Connecting to Supabase\u2026", 14, true);
+        JLabel sub = UI.hint("Please wait a moment");
+        JPanel texts = new JPanel(new GridLayout(2, 1, 0, 2));
+        texts.setOpaque(false);
+        texts.add(waiting);
+        texts.add(sub);
+        box.add(texts, BorderLayout.CENTER);
+        box.add(spinWrap, BorderLayout.EAST);
+        overlay.add(box);
         overlay.addMouseListener(new java.awt.event.MouseAdapter() {});
         overlay.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {});
         overlay.setFocusable(true);
@@ -55,14 +76,14 @@ public class AppFrame extends JFrame {
         }.execute();
     }
 
-    private static final Color NAVY = new Color(8, 17, 35);
-    private static final Color NAVY_END = new Color(16, 35, 65);
+    private static final Color NAVY = new Color(13, 31, 58);
+    private static final Color NAVY_END = new Color(9, 21, 41);
     private static final Color BLUE = new Color(37, 113, 245);
     private static final Color CYAN = new Color(64, 202, 255);
     private static final Color TEXT = new Color(29, 44, 65);
     private static final Color MUTED = new Color(126, 143, 165);
     private static final Color LINE = new Color(226, 233, 242);
-    private static final Color CANVAS = new Color(244, 247, 252);
+    private static final Color CANVAS = UI.BG;
 
     public AppFrame() {
         super("Barangay EMS | Emergency Operations Center");
@@ -139,28 +160,38 @@ public class AppFrame extends JFrame {
         });
     }
 
+    private static String describe(String page) {
+        switch (page) {
+            case "Evacuation Centers": return "Manage shelters, their capacity and available facilities";
+            case "Evacuees": return "Register, update and transfer evacuees between centers";
+            case "Resources": return "Track stock levels and minimum reserves at each center";
+            case "Allocation": return "Plan quantities and move supplies between centers";
+            case "Reports": return "Generate a report, review it, then export it as a text file";
+            case "Staff Applications": return "Review center staff sign-ups and manage their access";
+            default: return "Live overview of shelters, evacuees and supplies";
+        }
+    }
+
     private void renderPage(String name) {
 
         JPanel shell = new JPanel(new BorderLayout());
         shell.setBackground(CANVAS);
 
-        // SIDEBAR
+        // ================= SIDEBAR =================
         JPanel side = new GradientPanel(NAVY, NAVY_END);
         side.setLayout(new BorderLayout());
-        side.setPreferredSize(new Dimension(260, 0));
-        side.setBorder(new MatteBorder(
-                0, 0, 0, 1, new Color(37, 61, 94)));
+        side.setPreferredSize(new Dimension(248, 0));
 
         // Brand
-        JPanel brand = new JPanel(new BorderLayout(13, 0));
+        JPanel brand = new JPanel(new BorderLayout(12, 0));
         brand.setOpaque(false);
-        brand.setBorder(new EmptyBorder(28, 22, 30, 16));
+        brand.setBorder(new EmptyBorder(24, 20, 22, 16));
 
         JPanel emblem = new JPanel(new GridBagLayout());
         emblem.setOpaque(false);
-        emblem.setPreferredSize(new Dimension(52, 52));
-        emblem.setMinimumSize(new Dimension(52, 52));
-        ImageIcon brandIcon = Logo.icon(48);
+        emblem.setPreferredSize(new Dimension(44, 44));
+        emblem.setMinimumSize(new Dimension(44, 44));
+        ImageIcon brandIcon = Logo.icon(42);
         if (brandIcon != null) {
             JLabel logoLabel = new JLabel(brandIcon);
             logoLabel.setToolTipText("Official Barangay-EMS logo");
@@ -169,23 +200,22 @@ public class AppFrame extends JFrame {
             // Graceful fallback only if the supplied logo asset is missing.
             emblem.setOpaque(true);
             emblem.setBackground(new Color(39, 91, 166));
-            emblem.setBorder(new LineBorder(new Color(105, 177, 255), 1, true));
             JLabel emblemText = new JLabel("B");
             emblemText.setForeground(Color.WHITE);
-            emblemText.setFont(new Font("SansSerif", Font.BOLD, 28));
+            emblemText.setFont(UI.font(Font.BOLD, 24));
             emblem.add(emblemText);
         }
 
-        JPanel brandText = new JPanel(new GridLayout(2, 1, 0, 5));
+        JPanel brandText = new JPanel(new GridLayout(2, 1, 0, 2));
         brandText.setOpaque(false);
 
-        JLabel brandName = new JLabel("BARANGAY EMS");
+        JLabel brandName = new JLabel("Barangay EMS");
         brandName.setForeground(Color.WHITE);
-        brandName.setFont(new Font("SansSerif", Font.BOLD, 16));
+        brandName.setFont(UI.font(Font.BOLD, 16));
 
-        JLabel brandSub = new JLabel("EMERGENCY OPERATIONS");
-        brandSub.setForeground(new Color(146, 174, 213));
-        brandSub.setFont(new Font("SansSerif", Font.BOLD, 9));
+        JLabel brandSub = new JLabel("Evacuation Management");
+        brandSub.setForeground(new Color(150, 172, 204));
+        brandSub.setFont(UI.font(Font.PLAIN, 11));
 
         brandText.add(brandName);
         brandText.add(brandSub);
@@ -196,20 +226,12 @@ public class AppFrame extends JFrame {
         side.add(brand, BorderLayout.NORTH);
 
         // Navigation
-        JPanel navWrap = new JPanel(new BorderLayout());
-        navWrap.setOpaque(false);
-        navWrap.setBorder(new EmptyBorder(4, 14, 10, 14));
-
-        JLabel section = new JLabel("   MAIN WORKSPACE");
-        section.setForeground(new Color(115, 145, 184));
-        section.setFont(new Font("SansSerif", Font.BOLD, 10));
-        section.setBorder(new EmptyBorder(10, 0, 17, 0));
-
-        navWrap.add(section, BorderLayout.NORTH);
-
         JPanel menu = new JPanel();
         menu.setOpaque(false);
         menu.setLayout(new BoxLayout(menu, BoxLayout.Y_AXIS));
+        menu.setBorder(new EmptyBorder(4, 12, 10, 12));
+
+        menu.add(sectionLabel("Menu"));
 
         String[] routes = {
             "Dashboard",
@@ -221,140 +243,50 @@ public class AppFrame extends JFrame {
         };
 
         for (String route : routes) {
-
-            boolean selected = route.equals(name);
-
-            JButton button = new JButton(route);
-            button.setMaximumSize(
-                    new Dimension(Integer.MAX_VALUE, 49));
-            button.setPreferredSize(new Dimension(225, 49));
-
-            button.setHorizontalAlignment(SwingConstants.LEFT);
-            button.setIcon(new NavIcon(route, selected));
-            button.setIconTextGap(15);
-
-            button.setFont(new Font(
-                    "SansSerif",
-                    selected ? Font.BOLD : Font.PLAIN,
-                    13
-            ));
-
-            button.setForeground(selected
-                    ? Color.WHITE
-                    : new Color(184, 202, 226));
-
-            button.setBackground(selected
-                    ? new Color(39, 91, 166)
-                    : new Color(12, 27, 49));
-
-            button.setOpaque(true);
-            button.setBorder(new EmptyBorder(0, 16, 0, 10));
-            button.setFocusPainted(false);
-            button.setContentAreaFilled(true);
-            button.setCursor(
-                    Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-
-            if (selected) {
-                button.setBorder(new CompoundBorder(
-                        new MatteBorder(
-                                0, 3, 0, 0,
-                                new Color(76, 177, 255)),
-                        new EmptyBorder(0, 13, 0, 10)
-                ));
-            }
-
-            button.addActionListener(e -> showPage(route));
-
-            menu.add(button);
-            menu.add(Box.createVerticalStrut(7));
+            menu.add(navButton(route, route.equals(name), () -> showPage(route)));
+            menu.add(Box.createVerticalStrut(4));
         }
 
         if (isOfficial()) {
-            boolean staffSelected = "Staff Applications".equals(name);
-            JButton staff = new JButton("Staff Applications");
-            staff.setMaximumSize(new Dimension(Integer.MAX_VALUE, 49));
-            staff.setPreferredSize(new Dimension(225, 49));
-            staff.setHorizontalAlignment(SwingConstants.LEFT);
-            staff.setIcon(new NavIcon("Staff Applications", staffSelected));
-            staff.setIconTextGap(15);
-            staff.setFont(new Font("SansSerif", staffSelected ? Font.BOLD : Font.PLAIN, 13));
-            staff.setForeground(staffSelected ? Color.WHITE : new Color(184, 202, 226));
-            staff.setBackground(staffSelected ? new Color(39, 91, 166) : new Color(12, 27, 49));
-            staff.setOpaque(true);
-            staff.setBorder(staffSelected
-                    ? new CompoundBorder(new MatteBorder(0, 3, 0, 0, new Color(76, 177, 255)), new EmptyBorder(0, 13, 0, 10))
-                    : new EmptyBorder(0, 16, 0, 10));
-            staff.setFocusPainted(false);
-            staff.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            staff.addActionListener(e -> showPage("Staff Applications"));
-            menu.add(staff);
-            menu.add(Box.createVerticalStrut(7));
+            menu.add(Box.createVerticalStrut(14));
+            menu.add(sectionLabel("Administration"));
+            menu.add(navButton("Staff Applications", "Staff Applications".equals(name),
+                    () -> showPage("Staff Applications")));
         }
 
-        navWrap.add(menu, BorderLayout.CENTER);
-        side.add(navWrap, BorderLayout.CENTER);
+        side.add(menu, BorderLayout.CENTER);
 
-        // Bottom status and logout
+        // Bottom status and actions
         JPanel bottom = new JPanel();
         bottom.setOpaque(false);
         bottom.setLayout(new BoxLayout(bottom, BoxLayout.Y_AXIS));
-        bottom.setBorder(new EmptyBorder(10, 16, 22, 16));
+        bottom.setBorder(new CompoundBorder(
+                new MatteBorder(1, 0, 0, 0, new Color(255, 255, 255, 22)),
+                new EmptyBorder(12, 12, 18, 12)));
 
-        JPanel status = new JPanel(new BorderLayout(10, 0));
-        status.setBackground(new Color(22, 45, 74));
-        status.setBorder(new CompoundBorder(
-                new LineBorder(new Color(48, 76, 111), 1, true),
-                new EmptyBorder(13, 12, 13, 12)
-        ));
-        status.setMaximumSize(
-                new Dimension(Integer.MAX_VALUE, 66));
+        JPanel status = new JPanel(new BorderLayout(8, 0));
+        status.setOpaque(false);
+        status.setBorder(new EmptyBorder(4, 14, 10, 8));
+        status.setAlignmentX(Component.LEFT_ALIGNMENT);
+        status.setMaximumSize(new Dimension(Integer.MAX_VALUE, 34));
 
         JLabel dot = new JLabel("●");
         dot.setForeground(new Color(74, 224, 163));
-        dot.setFont(new Font("SansSerif", Font.BOLD, 13));
+        dot.setFont(UI.font(Font.BOLD, 10));
 
-        JPanel statusText = new JPanel(
-                new GridLayout(2, 1, 0, 5));
-        statusText.setOpaque(false);
-
-        JLabel statusTitle = new JLabel("SYSTEM OPERATIONAL");
-        statusTitle.setForeground(Color.WHITE);
-        statusTitle.setFont(new Font("SansSerif", Font.BOLD, 10));
-
-        JLabel statusSub = new JLabel("Supabase database connected");
-        statusSub.setForeground(new Color(153, 179, 210));
-        statusSub.setFont(new Font("SansSerif", Font.PLAIN, 10));
-
-        statusText.add(statusTitle);
-        statusText.add(statusSub);
+        JLabel statusText = new JLabel("Connected to Supabase");
+        statusText.setForeground(new Color(160, 182, 212));
+        statusText.setFont(UI.font(Font.PLAIN, 12));
 
         status.add(dot, BorderLayout.WEST);
         status.add(statusText, BorderLayout.CENTER);
 
-        JButton logout = new JButton("↪    Sign out of system");
-        logout.setHorizontalAlignment(SwingConstants.LEFT);
-        logout.setForeground(new Color(192, 208, 229));
-        logout.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        logout.setOpaque(false);
-        logout.setContentAreaFilled(false);
-        logout.setBorder(new EmptyBorder(16, 5, 5, 5));
-        logout.setFocusPainted(false);
-        logout.setCursor(
-                Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        logout.setMaximumSize(
-                new Dimension(Integer.MAX_VALUE, 45));
+        JButton refresh = navButton("Refresh data", false, () -> showPage(name));
+        refresh.setIcon(new NavIcon("Refresh", false));
+        refresh.setToolTipText("Reload the latest records from the database");
 
-        JButton refresh = new JButton("↻    Refresh database");
-        refresh.setHorizontalAlignment(SwingConstants.LEFT);
-        refresh.setForeground(new Color(192, 208, 229));
-        refresh.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        refresh.setOpaque(false);
-        refresh.setContentAreaFilled(false);
-        refresh.setBorder(new EmptyBorder(14, 5, 2, 5));
-        refresh.setFocusPainted(false);
-        refresh.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        refresh.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
-        refresh.addActionListener(e -> showPage(name));
+        JButton logout = navButton("Sign out", false, null);
+        logout.setIcon(new NavIcon("Sign out", false));
 
         logout.addActionListener(e -> {
             if (JOptionPane.showConfirmDialog(
@@ -378,86 +310,92 @@ public class AppFrame extends JFrame {
         });
 
         bottom.add(status);
-        bottom.add(Box.createVerticalStrut(4));
         bottom.add(refresh);
-        bottom.add(Box.createVerticalStrut(3));
+        bottom.add(Box.createVerticalStrut(4));
         bottom.add(logout);
 
         side.add(bottom, BorderLayout.SOUTH);
 
-        // MAIN AREA
+        // ================= MAIN AREA =================
         JPanel area = new JPanel(new BorderLayout());
         area.setBackground(CANVAS);
 
-        // Top bar
+        // Top bar: page title + short description, user on the right
         JPanel topbar = new JPanel(new BorderLayout());
         topbar.setBackground(Color.WHITE);
         topbar.setBorder(new CompoundBorder(
                 new MatteBorder(0, 0, 1, 0, LINE),
-                new EmptyBorder(16, 30, 16, 30)
+                new EmptyBorder(16, 24, 16, 24)
         ));
 
-        JPanel breadcrumb = new JPanel();
-        breadcrumb.setOpaque(false);
-        breadcrumb.setLayout(new BoxLayout(
-                breadcrumb, BoxLayout.Y_AXIS));
-
-        JLabel crumb = new JLabel(
-                "OPERATIONS     /     " + name.toUpperCase());
-        crumb.setForeground(MUTED);
-        crumb.setFont(new Font("SansSerif", Font.BOLD, 10));
+        JPanel heading = new JPanel();
+        heading.setOpaque(false);
+        heading.setLayout(new BoxLayout(heading, BoxLayout.Y_AXIS));
 
         JLabel pageTitle = new JLabel(name);
         pageTitle.setForeground(TEXT);
-        pageTitle.setFont(new Font("SansSerif", Font.BOLD, 21));
+        pageTitle.setFont(UI.font(Font.BOLD, 21));
 
-        breadcrumb.add(crumb);
-        breadcrumb.add(Box.createVerticalStrut(5));
-        breadcrumb.add(pageTitle);
+        JLabel pageDesc = new JLabel(describe(name));
+        pageDesc.setForeground(MUTED);
+        pageDesc.setFont(UI.font(Font.PLAIN, 13));
 
-        JPanel userPanel = new JPanel(
-                new FlowLayout(FlowLayout.RIGHT, 12, 0));
+        heading.add(pageTitle);
+        heading.add(Box.createVerticalStrut(2));
+        heading.add(pageDesc);
+
+        JPanel userPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         userPanel.setOpaque(false);
 
         JLabel date = new JLabel(
                 LocalDate.now().format(
-                        DateTimeFormatter.ofPattern("EEE, MMM dd, yyyy")));
-
+                        DateTimeFormatter.ofPattern("EEE, MMM d, yyyy")));
         date.setForeground(MUTED);
-        date.setFont(new Font("SansSerif", Font.PLAIN, 11));
+        date.setFont(UI.font(Font.PLAIN, 12));
+        date.setBorder(new CompoundBorder(
+                new MatteBorder(0, 0, 0, 1, LINE),
+                new EmptyBorder(0, 0, 0, 16)));
 
-        JPanel avatar = new GradientPanel(BLUE, CYAN);
-        avatar.setLayout(new GridBagLayout());
-        avatar.setPreferredSize(new Dimension(39, 39));
-        avatar.setBorder(new LineBorder(
-                new Color(214, 229, 255), 1, true));
+        JLabel avatar = new JLabel(userInitial(), SwingConstants.CENTER) {
+            @Override
+            protected void paintComponent(Graphics graphics) {
+                Graphics2D g = (Graphics2D) graphics.create();
+                g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g.setColor(UI.BLUE_PALE);
+                g.fillOval(0, 0, getWidth() - 1, getHeight() - 1);
+                g.dispose();
+                super.paintComponent(graphics);
+            }
+        };
+        avatar.setPreferredSize(new Dimension(36, 36));
+        avatar.setForeground(BLUE);
+        avatar.setFont(UI.font(Font.BOLD, 15));
 
-        JLabel avatarText = new JLabel(userInitial());
-        avatarText.setForeground(Color.WHITE);
-        avatarText.setFont(new Font("SansSerif", Font.BOLD, 16));
-        avatar.add(avatarText);
-
-        JPanel userText = new JPanel(new GridLayout(2, 1, 0, 4));
+        JPanel userText = new JPanel(new GridLayout(2, 1, 0, 1));
         userText.setOpaque(false);
 
         JLabel username = new JLabel(data != null && data.user() != null ? data.user().fullName : "User");
         username.setForeground(TEXT);
-        username.setFont(new Font("SansSerif", Font.BOLD, 12));
+        username.setFont(UI.font(Font.BOLD, 13));
 
         JLabel userRole = new JLabel(role);
         userRole.setForeground(MUTED);
-        userRole.setFont(new Font("SansSerif", Font.PLAIN, 10));
+        userRole.setFont(UI.font(Font.PLAIN, 11));
 
         userText.add(username);
         userText.add(userRole);
 
         userPanel.add(date);
-        userPanel.add(Box.createHorizontalStrut(8));
+        userPanel.add(Box.createHorizontalStrut(4));
         userPanel.add(avatar);
         userPanel.add(userText);
 
-        topbar.add(breadcrumb, BorderLayout.WEST);
-        topbar.add(userPanel, BorderLayout.EAST);
+        JPanel userWrap = new JPanel(new GridBagLayout());
+        userWrap.setOpaque(false);
+        userWrap.add(userPanel);
+
+        topbar.add(heading, BorderLayout.WEST);
+        topbar.add(userWrap, BorderLayout.EAST);
 
         area.add(topbar, BorderLayout.NORTH);
 
@@ -495,26 +433,65 @@ public class AppFrame extends JFrame {
 
         area.add(content, BorderLayout.CENTER);
 
-        // Footer
-        JPanel footer = new JPanel(new BorderLayout());
-        footer.setBackground(CANVAS);
-        footer.setBorder(new EmptyBorder(0, 30, 12, 30));
-
-        JLabel footerText = new JLabel(
-                "BARANGAY EMS    •    SUPABASE CONNECTED ENVIRONMENT"
-        );
-        footerText.setForeground(new Color(143, 156, 176));
-        footerText.setFont(new Font("SansSerif", Font.BOLD, 9));
-
-        footer.add(footerText, BorderLayout.WEST);
-        area.add(footer, BorderLayout.SOUTH);
-
         shell.add(side, BorderLayout.WEST);
         shell.add(area, BorderLayout.CENTER);
 
         setContentPane(shell);
         revalidate();
         repaint();
+    }
+
+    private static JComponent sectionLabel(String text) {
+        JLabel section = new JLabel(text.toUpperCase());
+        section.setForeground(new Color(110, 136, 172));
+        section.setFont(UI.font(Font.BOLD, 10));
+        section.setBorder(new EmptyBorder(6, 14, 8, 0));
+        section.setAlignmentX(Component.LEFT_ALIGNMENT);
+        section.setMaximumSize(new Dimension(Integer.MAX_VALUE, 28));
+        return section;
+    }
+
+    private static JButton navButton(String route, boolean selected, Runnable action) {
+        JButton button = new JButton(route) {
+            private boolean hover;
+            {
+                addMouseListener(new java.awt.event.MouseAdapter() {
+                    @Override public void mouseEntered(java.awt.event.MouseEvent e) { hover = true; repaint(); }
+                    @Override public void mouseExited(java.awt.event.MouseEvent e) { hover = false; repaint(); }
+                });
+            }
+            @Override
+            protected void paintComponent(Graphics graphics) {
+                if (selected || hover) {
+                    Graphics2D g = (Graphics2D) graphics.create();
+                    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                    g.setColor(selected ? new Color(255, 255, 255, 30) : new Color(255, 255, 255, 14));
+                    g.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                    if (selected) {
+                        g.setColor(new Color(96, 184, 255));
+                        g.fillRoundRect(0, 10, 3, getHeight() - 20, 3, 3);
+                    }
+                    g.dispose();
+                }
+                super.paintComponent(graphics);
+            }
+        };
+        button.setAlignmentX(Component.LEFT_ALIGNMENT);
+        button.setMaximumSize(new Dimension(Integer.MAX_VALUE, 42));
+        button.setPreferredSize(new Dimension(220, 42));
+        button.setHorizontalAlignment(SwingConstants.LEFT);
+        button.setIcon(new NavIcon(route, selected));
+        button.setIconTextGap(12);
+        button.setFont(UI.font(selected ? Font.BOLD : Font.PLAIN, 13));
+        button.setForeground(selected ? Color.WHITE : new Color(186, 202, 224));
+        button.setOpaque(false);
+        button.setContentAreaFilled(false);
+        button.setBorderPainted(false);
+        button.setBorder(new EmptyBorder(0, 14, 0, 10));
+        button.setFocusPainted(false);
+        button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        if (action != null) button.addActionListener(e -> action.run());
+        return button;
     }
 
     private String userInitial() {
@@ -544,7 +521,7 @@ public class AppFrame extends JFrame {
 
             g.setPaint(new GradientPaint(
                     0, 0, first,
-                    getWidth(), getHeight(), second));
+                    0, getHeight(), second));
 
             g.fillRect(0, 0, getWidth(), getHeight());
             g.dispose();
@@ -565,11 +542,11 @@ public class AppFrame extends JFrame {
         }
 
         public int getIconWidth() {
-            return 21;
+            return 20;
         }
 
         public int getIconHeight() {
-            return 21;
+            return 20;
         }
 
         public void paintIcon(
@@ -586,61 +563,64 @@ public class AppFrame extends JFrame {
                     RenderingHints.VALUE_ANTIALIAS_ON);
 
             g.setColor(selected
-                    ? new Color(125, 204, 255)
-                    : new Color(145, 174, 210));
+                    ? new Color(130, 204, 255)
+                    : new Color(140, 165, 199));
 
             g.setStroke(new BasicStroke(
-                    1.7f,
+                    1.6f,
                     BasicStroke.CAP_ROUND,
                     BasicStroke.JOIN_ROUND));
 
             switch (type) {
 
                 case "Dashboard":
-                    g.drawPolyline(
-                            new int[]{1, 10, 19},
-                            new int[]{9, 1, 9}, 3);
-                    g.drawRect(4, 8, 12, 11);
-                    g.drawRect(8, 12, 4, 7);
+                    g.drawRoundRect(2, 2, 7, 7, 2, 2);
+                    g.drawRoundRect(11, 2, 7, 7, 2, 2);
+                    g.drawRoundRect(2, 11, 7, 7, 2, 2);
+                    g.drawRoundRect(11, 11, 7, 7, 2, 2);
                     break;
 
                 case "Evacuation Centers":
-                    g.drawRect(3, 2, 14, 17);
-                    for (int a = 6; a < 16; a += 5) {
-                        for (int b = 5; b < 15; b += 5) {
-                            g.fillRect(a, b, 2, 2);
-                        }
-                    }
+                    g.drawPolyline(new int[]{2, 10, 18}, new int[]{9, 2, 9}, 3);
+                    g.drawRect(4, 8, 12, 10);
+                    g.drawRect(8, 12, 4, 6);
                     break;
 
                 case "Evacuees":
-                    g.drawOval(7, 1, 6, 6);
-                    g.drawArc(3, 9, 14, 14, 0, 180);
-                    g.drawLine(3, 16, 17, 16);
+                    g.drawOval(4, 2, 6, 6);
+                    g.drawArc(1, 10, 12, 12, 0, 180);
+                    g.drawOval(12, 4, 5, 5);
+                    g.drawArc(11, 11, 8, 9, 0, 150);
                     break;
 
                 case "Resources":
-                    g.drawRect(2, 6, 16, 13);
+                    g.drawRoundRect(2, 6, 16, 12, 3, 3);
                     g.drawLine(2, 11, 18, 11);
-                    g.drawRect(7, 2, 6, 4);
+                    g.drawRoundRect(7, 2, 6, 4, 2, 2);
                     break;
 
                 case "Staff Applications":
-                    g.drawOval(5, 2, 10, 10);
-                    g.drawArc(2, 10, 16, 12, 0, 180);
-                    g.drawLine(15, 5, 19, 5);
-                    g.drawLine(17, 3, 17, 7);
+                    g.drawOval(4, 2, 8, 8);
+                    g.drawArc(1, 11, 14, 12, 0, 180);
+                    g.drawPolyline(new int[]{13, 15, 19}, new int[]{9, 11, 6}, 3);
                     break;
 
                 case "Reports":
-                    for (int i = 0; i < 3; i++) {
-                        g.fillRoundRect(
-                                3 + i * 6,
-                                12 - i * 4,
-                                4,
-                                8 + i * 4,
-                                2, 2);
-                    }
+                    g.drawRoundRect(3, 2, 14, 16, 3, 3);
+                    g.drawLine(7, 7, 13, 7);
+                    g.drawLine(7, 10, 13, 10);
+                    g.drawLine(7, 13, 11, 13);
+                    break;
+
+                case "Refresh":
+                    g.drawArc(3, 3, 14, 14, 30, 280);
+                    g.drawPolyline(new int[]{13, 17, 17}, new int[]{4, 5, 1}, 3);
+                    break;
+
+                case "Sign out":
+                    g.drawPolyline(new int[]{11, 3, 3, 11}, new int[]{3, 3, 17, 17}, 4);
+                    g.drawLine(8, 10, 18, 10);
+                    g.drawPolyline(new int[]{14, 18, 14}, new int[]{6, 10, 14}, 3);
                     break;
 
                 default:
@@ -648,10 +628,10 @@ public class AppFrame extends JFrame {
                     g.drawPolyline(
                             new int[]{13, 18, 13},
                             new int[]{2, 6, 10}, 3);
-                    g.drawLine(18, 15, 2, 15);
+                    g.drawLine(18, 14, 2, 14);
                     g.drawPolyline(
                             new int[]{7, 2, 7},
-                            new int[]{11, 15, 19}, 3);
+                            new int[]{10, 14, 18}, 3);
                     break;
             }
 

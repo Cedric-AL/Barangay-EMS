@@ -2,36 +2,23 @@ package barangayems.frontend;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.FlowLayout;
 import java.util.Arrays;
 
-import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
-import javax.swing.JSeparator;
 import javax.swing.JTextField;
-import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
-import javax.swing.border.LineBorder;
 
 public class Login extends JPanel {
-
-    private static final Color BG = new Color(244, 247, 251);
-    private static final Color WHITE = Color.WHITE;
-    private static final Color NAVY = new Color(29, 45, 67);
-    private static final Color BLUE = new Color(37, 103, 216);
-    private static final Color LINE = new Color(205, 215, 228);
-    private static final Color MUTED = new Color(100, 116, 139);
 
     private final AppFrame app;
 
@@ -43,83 +30,41 @@ public class Login extends JPanel {
         super(new GridBagLayout());
 
         this.app = app;
-        setBackground(BG);
-        setBorder(new EmptyBorder(20, 20, 20, 20));
+        setBackground(UI.BG);
+        setBorder(new EmptyBorder(24, 24, 24, 24));
 
-        // Main login card
-        JPanel body = new JPanel(new BorderLayout(0, 22));
-        body.setBackground(WHITE);
-        body.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(LINE, 1),
-                new EmptyBorder(24, 40, 24, 40)
-        ));
-        body.setPreferredSize(new Dimension(620, 650));
-        body.setMinimumSize(new Dimension(500, 620));
+        UI.RoundedPanel card = new UI.RoundedPanel(20, Color.WHITE);
+        card.setLayout(new BorderLayout());
+        card.setPreferredSize(new Dimension(920, 580));
 
-        // =========================
-        // HEADER AND LOGO
-        // =========================
-        JPanel header = new JPanel();
-        header.setBackground(WHITE);
-        header.setLayout(new BoxLayout(header, BoxLayout.Y_AXIS));
-
-        try {
-            javax.swing.ImageIcon icon = Logo.icon(85);
-
-            if (icon != null) {
-                JLabel logo = new JLabel(icon);
-                logo.setAlignmentX(CENTER_ALIGNMENT);
-                header.add(logo);
-                header.add(Box.createVerticalStrut(8));
-            }
-        } catch (Exception ex) {
-            System.err.println("Could not load Barangay-EMS logo: "
-                    + ex.getMessage());
-        }
-
-        JLabel brand = new JLabel("BARANGAY-EMS");
-        brand.setFont(new java.awt.Font(
-                "SansSerif", java.awt.Font.BOLD, 32));
-        brand.setForeground(NAVY);
-        brand.setAlignmentX(CENTER_ALIGNMENT);
-
-        JLabel subtitle = new JLabel(
-                "Barangay Evacuation Management System");
-        subtitle.setFont(new java.awt.Font(
-                "SansSerif", java.awt.Font.BOLD, 15));
-        subtitle.setForeground(NAVY);
-        subtitle.setAlignmentX(CENTER_ALIGNMENT);
-
-        JLabel description = new JLabel(
-                "Sign in to access your account");
-        description.setFont(new java.awt.Font(
-                "SansSerif", java.awt.Font.PLAIN, 12));
-        description.setForeground(MUTED);
-        description.setAlignmentX(CENTER_ALIGNMENT);
-
-        header.add(brand);
-        header.add(Box.createVerticalStrut(8));
-        header.add(subtitle);
-        header.add(Box.createVerticalStrut(8));
-        header.add(description);
-        header.add(Box.createVerticalStrut(16));
-
-        JSeparator headerLine = new JSeparator();
-        headerLine.setForeground(LINE);
-        headerLine.setMaximumSize(
-                new Dimension(Integer.MAX_VALUE, 1));
-        header.add(headerLine);
-
-        body.add(header, BorderLayout.NORTH);
+        card.add(brandPanel(
+                "Barangay Evacuation Management System",
+                "Coordinate evacuation centers, evacuees and relief supplies in one place."),
+                BorderLayout.WEST);
 
         // =========================
-        // LOGIN FIELDS
+        // FORM
         // =========================
-        JPanel fields = new JPanel(new GridBagLayout());
-        fields.setBackground(WHITE);
-        fields.setOpaque(true);
+        JPanel form = new JPanel();
+        form.setOpaque(false);
+        form.setLayout(new BoxLayout(form, BoxLayout.Y_AXIS));
+        form.setBorder(new EmptyBorder(48, 52, 40, 52));
 
-        emailField = new JTextField();
+        JLabel title = UI.label("Welcome back", 26, true);
+        title.setAlignmentX(LEFT_ALIGNMENT);
+        JLabel description = UI.hint("Sign in with your Barangay-EMS account to continue.");
+        description.setFont(UI.font(java.awt.Font.PLAIN, 13));
+        description.setAlignmentX(LEFT_ALIGNMENT);
+
+        form.add(title);
+        form.add(Box.createVerticalStrut(6));
+        form.add(description);
+        form.add(Box.createVerticalStrut(28));
+
+        JPanel fields = UI.form();
+        fields.setAlignmentX(LEFT_ALIGNMENT);
+
+        emailField = new UI.HintField("name@example.com", false);
         passwordField = new JPasswordField();
 
         roleCombo = new JComboBox<>(new String[]{
@@ -127,184 +72,116 @@ public class Login extends JPanel {
             "Center Staff"
         });
 
-        styleInput(emailField);
-        styleInput(passwordField);
-        styleComboBox(roleCombo);
+        UI.field(fields, 0, "Email address", emailField);
+        UI.field(fields, 1, "Password", UI.password(passwordField));
+        UI.field(fields, 2, "Sign in as", roleCombo);
+        fields.setMaximumSize(new Dimension(Integer.MAX_VALUE, fields.getPreferredSize().height));
 
-        addLoginField(fields, 0, "Email Address", emailField);
-        JPanel passwordRow = new JPanel(new BorderLayout(8, 0));
-        passwordRow.setBackground(WHITE);
-        passwordRow.add(passwordField, BorderLayout.CENTER);
-        javax.swing.JToggleButton showPassword = new javax.swing.JToggleButton("Show password");
-        char passwordMask = passwordField.getEchoChar();
-        showPassword.addActionListener(e -> {
-            passwordField.setEchoChar(showPassword.isSelected() ? (char)0 : passwordMask);
-            showPassword.setText(showPassword.isSelected() ? "Hide password" : "Show password");
-        });
-        passwordRow.add(showPassword, BorderLayout.EAST);
-        addLoginField(fields, 1, "Password", passwordRow);
-        addLoginField(fields, 2, "Sign in as", roleCombo);
+        form.add(fields);
+        form.add(Box.createVerticalStrut(8));
 
-        fields.setBorder(new EmptyBorder(10, 0, 10, 0));
-        fields.setAlignmentX(Component.LEFT_ALIGNMENT);
-        body.add(fields, BorderLayout.CENTER);
+        JButton loginButton = UI.button("Sign in", this::performLogin);
+        loginButton.setAlignmentX(LEFT_ALIGNMENT);
+        loginButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, 42));
 
-        // =========================
-        // BUTTONS AND FOOTER
-        // =========================
-        JPanel footer = new JPanel();
-        footer.setBackground(WHITE);
-        footer.setLayout(new BoxLayout(footer, BoxLayout.Y_AXIS));
+        form.add(loginButton);
+        form.add(Box.createVerticalStrut(18));
 
-        JSeparator footerLine = new JSeparator();
-        footerLine.setForeground(LINE);
-        footerLine.setMaximumSize(
-                new Dimension(Integer.MAX_VALUE, 1));
+        JPanel register = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        register.setOpaque(false);
+        register.setAlignmentX(LEFT_ALIGNMENT);
+        JLabel newHere = UI.hint("Center staff without an account? ");
+        newHere.setFont(UI.font(java.awt.Font.PLAIN, 13));
+        JButton registerButton = UI.ghost("Register as Center Staff", () -> this.app.showRegistration());
+        registerButton.setBorder(new EmptyBorder(4, 6, 4, 6));
+        register.add(newHere);
+        register.add(registerButton);
+        register.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        form.add(register);
 
-        footer.add(footerLine);
-        footer.add(Box.createVerticalStrut(14));
+        form.add(Box.createVerticalGlue());
 
-        JButton loginButton = createButton("Login", BLUE);
-        loginButton.addActionListener(e -> performLogin());
+        JLabel note = UI.hint("Use your linked Supabase Auth account. The account determines your role.");
+        note.setFont(UI.font(java.awt.Font.PLAIN, 11));
+        note.setAlignmentX(LEFT_ALIGNMENT);
+        form.add(note);
 
-        JButton registerButton = createButton(
-                "Register as Center Staff", BLUE);
-        registerButton.addActionListener(
-                e -> this.app.showRegistration());
+        card.add(form, BorderLayout.CENTER);
 
-        footer.add(loginButton);
-        footer.add(Box.createVerticalStrut(10));
-        footer.add(registerButton);
-        footer.add(Box.createVerticalStrut(14));
+        add(card, new GridBagConstraints());
 
-        JLabel note = new JLabel(
-                "<html><div style='text-align:center;'>"
-                + "Use your linked Supabase Auth account. "
-                + "The account determines your role."
-                + "</div></html>");
-
-        note.setFont(new java.awt.Font(
-                "SansSerif", java.awt.Font.PLAIN, 11));
-        note.setForeground(MUTED);
-        note.setAlignmentX(CENTER_ALIGNMENT);
-
-        footer.add(note);
-        body.add(footer, BorderLayout.SOUTH);
-
-        // Center the login card
-        GridBagConstraints cardConstraints
-                = new GridBagConstraints();
-
-        cardConstraints.gridx = 0;
-        cardConstraints.gridy = 0;
-        cardConstraints.weightx = 1;
-        cardConstraints.weighty = 1;
-        cardConstraints.anchor = GridBagConstraints.CENTER;
-        cardConstraints.fill = GridBagConstraints.NONE;
-
-        add(body, cardConstraints);
-
-        // Press Enter in the password field to log in
-        passwordField.addActionListener(
-                e -> loginButton.doClick());
+        // Press Enter in the email or password field to log in
+        passwordField.addActionListener(e -> loginButton.doClick());
+        emailField.addActionListener(e -> passwordField.requestFocusInWindow());
     }
 
-    // =========================
-    // FIELD LAYOUT
-    // =========================
-    
-private void addLoginField(
-        JPanel panel,
-        int row,
-        String labelText,
-        JComponent input) {
+    /** Navy brand panel shared by the login and registration screens. */
+    static JPanel brandPanel(String headline, String tagline) {
+        JPanel brand = new JPanel(new BorderLayout()) {
+            @Override
+            protected void paintComponent(java.awt.Graphics graphics) {
+                java.awt.Graphics2D g = (java.awt.Graphics2D) graphics.create();
+                g.setRenderingHint(java.awt.RenderingHints.KEY_ANTIALIASING, java.awt.RenderingHints.VALUE_ANTIALIAS_ON);
+                g.setPaint(new java.awt.GradientPaint(0, 0, new Color(18, 44, 82), 0, getHeight(), new Color(9, 21, 41)));
+                g.fill(new java.awt.geom.RoundRectangle2D.Float(0, 0, getWidth() + 30, getHeight() - 1.5f, 20, 20));
+                g.setColor(new Color(255, 255, 255, 10));
+                g.fillOval(getWidth() - 190, getHeight() - 220, 300, 300);
+                g.fillOval(-120, -100, 260, 260);
+                g.dispose();
+            }
+        };
+        brand.setOpaque(false);
+        brand.setPreferredSize(new Dimension(380, 0));
+        brand.setBorder(new EmptyBorder(44, 40, 40, 40));
 
-    GridBagConstraints constraints = new GridBagConstraints();
+        JPanel top = new JPanel();
+        top.setOpaque(false);
+        top.setLayout(new BoxLayout(top, BoxLayout.Y_AXIS));
 
-    constraints.gridx = 0;
-    constraints.weightx = 1.0;
-    constraints.fill = GridBagConstraints.HORIZONTAL;
-    constraints.anchor = GridBagConstraints.WEST;
-    constraints.gridwidth = 1;
+        javax.swing.ImageIcon icon = Logo.icon(72);
+        if (icon != null) {
+            JLabel logo = new JLabel(icon);
+            logo.setAlignmentX(LEFT_ALIGNMENT);
+            top.add(logo);
+            top.add(Box.createVerticalStrut(26));
+        }
 
-    JLabel label = new JLabel(labelText);
-    label.setFont(new java.awt.Font(
-            "SansSerif", java.awt.Font.BOLD, 13));
-    label.setForeground(NAVY);
-    label.setLabelFor(input);
+        JLabel name = new JLabel("BARANGAY-EMS");
+        name.setFont(UI.font(java.awt.Font.BOLD, 13));
+        name.setForeground(new Color(130, 196, 255));
+        name.setAlignmentX(LEFT_ALIGNMENT);
 
-    // Label row
-    constraints.gridy = row * 2;
-    constraints.insets = new Insets(5, 0, 5, 0);
-    panel.add(label, constraints);
+        JLabel title = new JLabel("<html><div style='width:230px'>" + headline + "</div></html>");
+        title.setFont(UI.font(java.awt.Font.BOLD, 24));
+        title.setForeground(Color.WHITE);
+        title.setAlignmentX(LEFT_ALIGNMENT);
 
-    // Input row
-    constraints.gridy = row * 2 + 1;
-    constraints.insets = new Insets(0, 0, 10, 0);
+        JLabel sub = new JLabel("<html><div style='width:230px'>" + tagline + "</div></html>");
+        sub.setFont(UI.font(java.awt.Font.PLAIN, 14));
+        sub.setForeground(new Color(176, 196, 224));
+        sub.setAlignmentX(LEFT_ALIGNMENT);
 
-    input.setPreferredSize(new Dimension(400, 40));
-    input.setMinimumSize(new Dimension(150, 40));
+        top.add(name);
+        top.add(Box.createVerticalStrut(10));
+        top.add(title);
+        top.add(Box.createVerticalStrut(14));
+        top.add(sub);
 
-    panel.add(input, constraints);
-}
+        JPanel points = new JPanel();
+        points.setOpaque(false);
+        points.setLayout(new BoxLayout(points, BoxLayout.Y_AXIS));
+        for (String point : new String[]{"Monitor center capacity in real time",
+                "Register and transfer evacuees", "Plan and distribute relief supplies"}) {
+            JLabel item = new JLabel("✓   " + point);
+            item.setFont(UI.font(java.awt.Font.PLAIN, 13));
+            item.setForeground(new Color(206, 220, 240));
+            item.setBorder(new EmptyBorder(5, 0, 5, 0));
+            points.add(item);
+        }
 
-
-    // =========================
-    // INPUT STYLING
-    // =========================
-    private void styleInput(JTextField field) {
-        field.setFont(new java.awt.Font(
-                "SansSerif", java.awt.Font.PLAIN, 14));
-        field.setForeground(NAVY);
-        field.setBackground(WHITE);
-        field.setCaretColor(BLUE);
-        field.setOpaque(true);
-        field.setEditable(true);
-        field.setEnabled(true);
-
-        field.setBorder(BorderFactory.createCompoundBorder(
-                new LineBorder(LINE, 1, true),
-                new EmptyBorder(8, 12, 8, 12)
-        ));
-    }
-
-    private void styleComboBox(JComboBox<String> combo) {
-        combo.setFont(new java.awt.Font(
-                "SansSerif", java.awt.Font.PLAIN, 14));
-        combo.setForeground(NAVY);
-        combo.setBackground(WHITE);
-        combo.setOpaque(true);
-        combo.setEnabled(true);
-        combo.setBorder(new LineBorder(LINE, 1, true));
-    }
-
-    // =========================
-    // BUTTON STYLING
-    // =========================
-    private JButton createButton(
-            String text,
-            Color background) {
-
-        JButton button = new JButton(text);
-
-        button.setFont(new java.awt.Font(
-                "SansSerif", java.awt.Font.BOLD, 13));
-        button.setForeground(WHITE);
-        button.setBackground(background);
-        button.setOpaque(true);
-        button.setContentAreaFilled(true);
-        button.setBorderPainted(false);
-        button.setFocusPainted(false);
-        button.setCursor(new java.awt.Cursor(
-                java.awt.Cursor.HAND_CURSOR));
-
-        button.setAlignmentX(CENTER_ALIGNMENT);
-        button.setMaximumSize(
-                new Dimension(Integer.MAX_VALUE, 42));
-        button.setPreferredSize(new Dimension(400, 42));
-        button.setMinimumSize(new Dimension(150, 42));
-
-        return button;
+        brand.add(top, BorderLayout.NORTH);
+        brand.add(points, BorderLayout.SOUTH);
+        return brand;
     }
 
     // =========================

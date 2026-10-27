@@ -9,22 +9,38 @@ final class StaffRegistration extends JPanel {
     StaffRegistration(AppFrame app) {
         super(new GridBagLayout());
         setBackground(UI.BG);
-        JPanel body = UI.panel(new BorderLayout(0, 20));
-        body.setPreferredSize(new Dimension(650, 590));
-        body.setBorder(BorderFactory.createEmptyBorder(25, 35, 25, 35));
-        body.add(UI.label("Register as Center Staff", 27, true), BorderLayout.NORTH);
+        setBorder(BorderFactory.createEmptyBorder(24, 24, 24, 24));
+
+        UI.RoundedPanel card = new UI.RoundedPanel(20, Color.WHITE);
+        card.setLayout(new BorderLayout());
+        card.setPreferredSize(new Dimension(920, 640));
+        card.add(Login.brandPanel("Join your barangay's response team",
+                "Create a Center Staff account. A Barangay Official reviews every application before access is granted."),
+                BorderLayout.WEST);
+
+        JPanel body = UI.panel(new BorderLayout(0, 18));
+        body.setBorder(BorderFactory.createEmptyBorder(40, 52, 36, 52));
+        JPanel heading = UI.panel(new GridLayout(2, 1, 0, 4));
+        heading.add(UI.label("Register as Center Staff", 24, true));
+        JLabel intro = UI.hint("All fields are required. Use at least 8 characters for your password.");
+        intro.setFont(UI.font(Font.PLAIN, 13));
+        heading.add(intro);
+        body.add(heading, BorderLayout.NORTH);
         JTextField name = new JTextField(), username = new JTextField(), email = new JTextField();
         JPasswordField password = new JPasswordField(), confirm = new JPasswordField();
         JPanel fields = UI.form();
-        UI.field(fields, 0, "Full name:", name);
-        UI.field(fields, 1, "Username:", username);
-        UI.field(fields, 2, "Email:", email);
-        UI.field(fields, 3, "Password:", passwordWithToggle(password));
-        UI.field(fields, 4, "Confirm password:", passwordWithToggle(confirm));
+        UI.field(fields, 0, "Full name", name);
+        UI.field(fields, 1, "Username", username);
+        UI.field(fields, 2, "Email", email);
+        UI.field(fields, 3, "Password", passwordWithToggle(password));
+        UI.field(fields, 4, "Confirm password", passwordWithToggle(confirm));
         body.add(fields, BorderLayout.CENTER);
-        JPanel footer = UI.panel(new GridLayout(0, 1, 0, 12));
-        footer.add(UI.label("A Barangay Official must approve your application before you can use the system.", 12, false));
-        footer.add(UI.button("Submit Staff Application", () -> {
+        JPanel footer = UI.panel(new BorderLayout(0, 14));
+        JLabel approval = UI.hint("A Barangay Official must approve your application before you can sign in.");
+        footer.add(approval, BorderLayout.NORTH);
+        JPanel buttons = UI.panel(new GridLayout(1, 2, 10, 0));
+        buttons.add(UI.secondary("Back to Login", app::showLogin));
+        buttons.add(UI.button("Submit Application", () -> {
             char[] secret = password.getPassword(), repeated = confirm.getPassword();
             String fullName = name.getText().trim(), handle = username.getText().trim(), address = email.getText().trim();
             String error = null;
@@ -46,21 +62,13 @@ final class StaffRegistration extends JPanel {
                 JOptionPane.showMessageDialog(app, "If registration was accepted, wait for Barangay Official approval.\nEmail confirmation is not required for this classroom setup.\nIf you already have an account, use Login instead.", "Application submitted", JOptionPane.INFORMATION_MESSAGE);
             });
         }));
-        footer.add(UI.button("Back to Login", app::showLogin));
+        footer.add(buttons, BorderLayout.CENTER);
         body.add(footer, BorderLayout.SOUTH);
-        add(body);
+        card.add(body, BorderLayout.CENTER);
+        add(card);
     }
 
     private static JPanel passwordWithToggle(JPasswordField field) {
-        JPanel row = UI.panel(new BorderLayout(8, 0));
-        row.add(field, BorderLayout.CENTER);
-        JToggleButton toggle = new JToggleButton("Show password");
-        char mask = field.getEchoChar();
-        toggle.addActionListener(e -> {
-            field.setEchoChar(toggle.isSelected() ? (char)0 : mask);
-            toggle.setText(toggle.isSelected() ? "Hide password" : "Show password");
-        });
-        row.add(toggle, BorderLayout.EAST);
-        return row;
+        return UI.password(field);
     }
 }

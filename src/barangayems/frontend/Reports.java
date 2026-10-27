@@ -13,9 +13,17 @@ public class Reports extends JPanel {
     final JComboBox<String> type=new JComboBox<>(new String[]{"Occupancy","Evacuee Records","Resource Inventory","Low Stock","Demand Shortages","Allocation History","Transfer History"});
     public Reports(AppFrame app){
         super(new BorderLayout());this.app=app;JPanel page=UI.page("6 — REPORTS");add(page);
-        JPanel body=UI.panel(new BorderLayout(0,20));JPanel controls=UI.panel(new FlowLayout(FlowLayout.LEFT,16,0));controls.add(UI.label("Report Type:",14,true));type.setPreferredSize(new Dimension(270,35));controls.add(type);controls.add(UI.button("Generate",()->generate()));body.add(UI.card(null,controls),BorderLayout.NORTH);
-        preview.setEditable(false);preview.setFont(new Font("Monospaced",Font.PLAIN,14));preview.setMargin(new Insets(24,24,24,24));body.add(UI.scroll(preview));preview.setLineWrap(false);
-        JPanel bottom=UI.panel(new FlowLayout(FlowLayout.RIGHT,0,0));bottom.add(UI.button("Export",()->export()));body.add(bottom,BorderLayout.SOUTH);page.add(body);generate();
+        JPanel body=UI.panel(new BorderLayout(0,16));
+        JPanel controls=UI.panel(new BorderLayout(12,0));
+        JPanel pick=UI.panel(new FlowLayout(FlowLayout.LEFT,10,0));
+        pick.add(UI.label("Report type",13,true));type.setPreferredSize(new Dimension(260,38));UI.styleInput(type);pick.add(type);pick.add(UI.button("Generate",()->generate()));
+        controls.add(pick,BorderLayout.WEST);
+        controls.add(UI.actions(FlowLayout.RIGHT,UI.secondary("Export as .txt",()->export())),BorderLayout.EAST);
+        body.add(controls,BorderLayout.NORTH);
+        preview.setEditable(false);preview.setFont(UI.mono(13));preview.setForeground(UI.INK);preview.setMargin(new Insets(22,26,22,26));preview.setLineWrap(false);
+        JScrollPane previewScroll=new JScrollPane(preview);previewScroll.setBorder(new javax.swing.border.LineBorder(UI.LINE,1,true));previewScroll.getVerticalScrollBar().setUnitIncrement(16);
+        body.add(UI.card("Preview","Review the report below before exporting",null,previewScroll));
+        page.add(body);generate();
     }
     void generate(){
         String selected=(String)type.getSelectedItem();StringBuilder text=new StringBuilder("BARANGAY-EMS REPORT\n===================\n\nReport Type : "+selected+"\nReport Date : "+LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))+"\nData        : Supabase database snapshot\n\n");

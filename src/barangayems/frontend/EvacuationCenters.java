@@ -13,7 +13,7 @@ public class EvacuationCenters extends JPanel {
     private final JTextArea facilities = new JTextArea(3,20);
     private EvacuationCenter selected;
     private final FacilityChecklist features = new FacilityChecklist();
-    private final JCheckBox assessed = new JCheckBox("Facility checklist assessed");
+    private final JCheckBox assessed = new JCheckBox("Facility checklist has been assessed");
 
     public EvacuationCenters(AppFrame app) {
         super(new BorderLayout());
@@ -21,56 +21,55 @@ public class EvacuationCenters extends JPanel {
         JPanel page = UI.page("3 — EVACUATION CENTERS");
         add(page);
 
-        JPanel body = UI.panel(new BorderLayout(0,18));
+        JPanel body = UI.panel(new BorderLayout(16,0));
+        boolean canManage = app.isOfficial();
+
+        // ---- Left: list of centers ----
+        JPanel list = UI.panel(new BorderLayout(0,14));
         JPanel toolbar = UI.panel(new BorderLayout(10,0));
-        JPanel search = UI.panel(new FlowLayout(FlowLayout.LEFT,10,0));
-        search.add(UI.label("Search centers:",12,false));
-        search.add(UI.search(table,"Search centers"));
-        toolbar.add(search, BorderLayout.WEST);
+        toolbar.add(UI.search(table,"Search centers or locations"), BorderLayout.WEST);
+        JButton add = UI.button("+  New Center", this::clear);
+        add.setEnabled(canManage);
+        toolbar.add(UI.actions(FlowLayout.RIGHT, add), BorderLayout.EAST);
+        list.add(toolbar, BorderLayout.NORTH);
+        list.add(UI.scroll(table), BorderLayout.CENTER);
+        list.add(UI.hint("Select a center to view or edit its details."), BorderLayout.SOUTH);
+        body.add(UI.card("All centers", app.store.centers.size() + " registered, including archived", null, list), BorderLayout.CENTER);
 
-        JButton add = UI.button("Add Center", this::clear);
-        add.setEnabled(app.isOfficial());
-        JPanel toolbarRight = UI.panel(new FlowLayout(FlowLayout.RIGHT,8,0));
-        toolbarRight.add(add);
-        toolbar.add(toolbarRight, BorderLayout.EAST);
-        body.add(toolbar, BorderLayout.NORTH);
-
-        JPanel split = UI.panel(new BorderLayout(16,0));
-        split.add(UI.scroll(table), BorderLayout.CENTER);
-
+        // ---- Right: details form ----
         JPanel fields = UI.form();
-        UI.field(fields,0,"Center Name",name);
+        UI.field(fields,0,"Center name",name);
         UI.field(fields,1,"Location",location);
-        UI.field(fields,2,"Max Capacity",capacity);
+        UI.field(fields,2,"Max capacity",capacity);
         UI.field(fields,3,"Facility notes",UI.scroll(facilities));
         UI.field(fields,4,"Available facilities",features);
         UI.field(fields,5,"Assessment",assessed);
-        features.editable(app.isOfficial()); assessed.setEnabled(app.isOfficial());
+        features.editable(canManage); assessed.setEnabled(canManage);
 
-        JPanel form = UI.panel(new BorderLayout(0,12));
+        JPanel form = UI.panel(new BorderLayout(0,14));
         form.add(UI.scroll(fields),BorderLayout.CENTER);
-        JPanel buttons = UI.panel(new FlowLayout(FlowLayout.LEFT,6,0));
-        JButton save = UI.button("Save",()->save(false));
-        JButton update = UI.button("Update",()->save(true));
-        JButton delete = UI.button("Delete",this::delete);
-        boolean canManage = app.isOfficial();
+        JButton save = UI.button("Save as New",()->save(false));
+        JButton update = UI.secondary("Update",()->save(true));
+        JButton delete = UI.danger("Delete",this::delete);
         save.setEnabled(canManage); update.setEnabled(canManage); delete.setEnabled(canManage);
-        JButton archive = UI.button("Archive", this::archive);
+        JButton archive = UI.secondary("Archive", this::archive);
         archive.setEnabled(canManage);
-        buttons.add(save); buttons.add(update); buttons.add(delete); buttons.add(archive);
+        JPanel buttons = UI.panel(new BorderLayout(0,8));
+        JPanel mainButtons = UI.panel(new GridLayout(1,2,8,0));
+        mainButtons.add(update); mainButtons.add(save);
+        JPanel otherButtons = UI.panel(new GridLayout(1,2,8,0));
+        otherButtons.add(archive); otherButtons.add(delete);
+        buttons.add(mainButtons, BorderLayout.CENTER);
+        buttons.add(otherButtons, BorderLayout.SOUTH);
+        if (!canManage) {
+            JLabel note = UI.hint("<html>Center Staff accounts can view centers. Only Barangay Officials can add, update or delete them.</html>");
+            buttons.add(note, BorderLayout.NORTH);
+        }
         form.add(buttons,BorderLayout.SOUTH);
 
-        JPanel right = UI.panel(new BorderLayout(0,10));
-        right.add(form, BorderLayout.CENTER);
-        if (!canManage) {
-            JLabel note = UI.label("Center Staff accounts can view centers, but only Barangay Officials can add, update, or delete them.",11,false);
-            note.setForeground(UI.MUTED);
-            right.add(note, BorderLayout.SOUTH);
-        }
-        JPanel card = UI.card("Center Information",right);
-        card.setPreferredSize(new Dimension(360,0));
-        split.add(card,BorderLayout.EAST);
-        body.add(split,BorderLayout.CENTER);
+        JPanel card = UI.card("Center details","Select a row to edit, or start a new center",null,form);
+        card.setPreferredSize(new Dimension(380,0));
+        body.add(card,BorderLayout.EAST);
         page.add(body,BorderLayout.CENTER);
 
         table.getSelectionModel().addListSelectionListener(e -> {
